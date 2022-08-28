@@ -1,0 +1,86 @@
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: nginx-psp
+spec:
+  allowPrivilegeEscalation: true
+  allowedCapabilities:
+  - '*'
+  fsGroup:
+    rule: RunAsAny
+  hostIPC: true
+  hostNetwork: true
+  hostPID: true
+  hostPorts:
+  - max: 65535
+    min: 0
+  privileged: true
+  runAsUser:
+    rule: RunAsAny
+  seLinux:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: RunAsAny
+  volumes:
+  - '*'
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: nginx-sa
+  namespace: default
+
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: nginx-sa-pods-role
+  namespace: default
+rules:
+  - apiGroups: ["extensions", "apps", ""]
+    resources: ["deployments", "pods"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: nginx-sa-psp-role
+  namespace: default
+rules:
+  - apiGroups: ["policy"]
+    resourceNames: ["nginx-psp"]
+    resources: ["podsecuritypolicies"]
+    verbs: ["use"]
+
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: nginx-sa-pods-role-binding
+  namespace: default
+subjects:
+  - kind: ServiceAccount
+    name: nginx-sa
+    namespace: default
+roleRef:
+  kind: Role
+  name: nginx-sa-pods-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: nginx-sa-psp-role-binding
+  namespace: default
+subjects:
+  - kind: ServiceAccount
+    name: nginx-sa
+    namespace: default
+roleRef:
+  kind: Role
+  name: nginx-sa-psp-role
+  apiGroup: rbac.authorization.k8s.io
