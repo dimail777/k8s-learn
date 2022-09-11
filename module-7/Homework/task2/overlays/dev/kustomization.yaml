@@ -1,0 +1,7 @@
+resources:
+  - ../../base
+namespace: dev
+namePrefix: dev-
+images:
+  - name: nginx
+    newTag: latest
