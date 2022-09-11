@@ -1,0 +1,16 @@
+{{- $host := include "host" . -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Chart.Name }}
+spec:
+  rules:
+    - host: {{ $host }}
+      http:
+        paths:
+          - path: /
+            backend:
+              service:
+                name: {{ .Chart.Name }}
+                port:
+                  number: 8080
